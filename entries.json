@@ -1,13 +1,1 @@
-[
-  {
-    "id": "a-1784624040763",
-    "ts": 1784624040763,
-    "type": "meal",
-    "name": "Борщ",
-    "calories": 280,
-    "emotion": "calm",
-    "emotions": ["calm", "tired"],
-    "intensity": "low",
-    "hunger": "hungry"
-  }
-]
+[]

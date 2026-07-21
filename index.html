@@ -385,7 +385,7 @@ function rowHTML(e){
       <div class="stopmark">⚡ Стоп-кран · ${sub}</div>
       <div class="r-top"><div class="r-name">${title}</div><div class="r-time">${fmtTime(e.ts)}</div></div>
       <div class="tags">
-        <span class="tag">${emo(e.emotion).emoji} ${emo(e.emotion).label}</span>
+        ${(e.emotions&&e.emotions.length?e.emotions:[e.emotion]).filter(Boolean).map(id=>`<span class="tag">${emo(id).emoji} ${emo(id).label}</span>`).join('')}
         <span class="tag">${inten(e.intensity)}</span>
         ${e.context?`<span class="tag">${escapeHtml(e.context)}</span>`:''}
       </div></div>`;
@@ -399,7 +399,7 @@ function rowHTML(e){
     </div>
     <div class="tags">
       <span class="tag ${h.physical?'':'hot'}">${h.physical?'🍽 '+h.label:'⚠ '+h.label}</span>
-      <span class="tag emo">${emo(e.emotion).emoji} ${emo(e.emotion).label}</span>
+      ${(e.emotions&&e.emotions.length?e.emotions:[e.emotion]).filter(Boolean).map(id=>`<span class="tag emo">${emo(id).emoji} ${emo(id).label}</span>`).join('')}
       <span class="tag">${inten(e.intensity)}</span>
     </div></div>`;
 }
@@ -450,7 +450,8 @@ function renderProgress(){
         <p>+${DATA.pointsRules.activity} — добавил(а) активность</p>
         <p class="no">Баллы — только за осознанность, не за «мало съел» или голодание.</p>
       </div>
-    </div></div>`;
+    </div></div>
+    <div class="block"><button class="add-mini" style="background:#B0665C" onclick="wipeAll()">🗑 Стереть все записи</button></div>`;
 }
 
 function plural(n,a,b,c){const m=n%100;if(m>=11&&m<=14)return c;const l=n%10;return l===1?a:(l>=2&&l<=4?b:c);}
@@ -462,14 +463,18 @@ function nextTip(){tipIndex=(tipIndex+Math.floor(Math.random()*(DATA.tips.length
 function del(id){state.entries=state.entries.filter(e=>e.id!==id);save();render();haptic();}
 function setProto(f,e){state.protocol={fastingHours:f,eatingHours:e};save();render();}
 function haptic(){try{Telegram.WebApp.HapticFeedback.impactOccurred('light');}catch(e){}}
+function wipeAll(){var go=function(ok){if(ok){state.entries=[];save();render();haptic();}};try{if(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.showConfirm){Telegram.WebApp.showConfirm('Удалить ВСЕ записи? Это нельзя отменить.',go);return;}}catch(e){}go(window.confirm('Удалить ВСЕ записи?'));}
 
 /* ---- modal core ---- */
 function openModal(html){$('sheet').innerHTML=html;$('overlay').classList.add('open');}
 function closeModal(){$('overlay').classList.remove('open');editingId=null;}
-function chipset(items,name,darkSel){
-  return `<div class="chipset" data-group="${name}">${items.map(i=>`<button type="button" class="ch ${darkSel?'dark-sel':''}" data-val="${i.id}" onclick="pick(this)">${i.emoji?i.emoji+' ':''}${i.label}</button>`).join('')}</div>`;
+function chipset(items,name,darkSel,multi){
+  return `<div class="chipset" data-group="${name}">${items.map(i=>`<button type="button" class="ch ${darkSel?'dark-sel':''}" data-val="${i.id}" onclick="${multi?'pickMulti(this,2)':'pick(this)'}">${i.emoji?i.emoji+' ':''}${i.label}</button>`).join('')}</div>`;
 }
 function pick(el){[...el.parentNode.children].forEach(c=>c.classList.remove('sel'));el.classList.add('sel');}
+function pickMulti(el,max){if(el.classList.contains('sel')){el.classList.remove('sel');return;}var sels=el.parentNode.querySelectorAll('.sel');if(sels.length>=max){sels[0].classList.remove('sel');}el.classList.add('sel');}
+function getPicks(group){return [...document.querySelectorAll(`[data-group="${group}"] .sel`)].map(x=>x.dataset.val);}
+function preselectMulti(group,vals){(vals||[]).forEach(v=>{if(!v)return;var el=document.querySelector(`[data-group="${group}"] [data-val="${v}"]`);if(el)el.classList.add('sel');});}
 function getPick(group){const g=document.querySelector(`[data-group="${group}"] .sel`);return g?g.dataset.val:null;}
 
 /* ---- add / edit meal ---- */
@@ -487,7 +492,7 @@ function mealSheet(title,lead,v){
     <h3>${title}</h3>${lead?`<p class="lead">${lead}</p>`:''}
     <div class="field"><label>Что съел(а)</label><input type="text" id="m-name" placeholder="Например, овсянка" value="${v.name?escapeHtml(v.name):''}"></div>
     <div class="field"><label>Голод до еды <span class="req">*</span></label>${chipset(DATA.hungerLevels,'hunger')}</div>
-    <div class="field"><label>Эмоция <span class="req">*</span></label>${chipset(DATA.emotions,'emotion')}</div>
+    <div class="field"><label>Эмоция <span class="req">*</span> <span style="color:#8C8F86;font-weight:600">(до 2)</span></label>${chipset(DATA.emotions,'emotion',false,true)}</div>
     <div class="field"><label>Интенсивность</label>${chipset(DATA.intensities,'intensity')}</div>
     <div class="field"><label>Калории (по желанию)</label><input type="number" id="m-kcal" inputmode="numeric" placeholder="можно пропустить" value="${v.calories!=null&&v.calories!==''?v.calories:''}"></div>
     <div class="err" id="m-err">Отметь голод и эмоцию — это ядро записи.</div>
@@ -495,21 +500,21 @@ function mealSheet(title,lead,v){
       <button class="b-ghost" onclick="closeModal()">Отмена</button>
       <button class="b-lime" onclick="saveMeal()">Сохранить</button>
     </div>`);
-  preselect('hunger',v.hunger);preselect('emotion',v.emotion);preselect('intensity',v.intensity||'mid');
+  preselect('hunger',v.hunger);preselectMulti('emotion',v.emotions||(v.emotion?[v.emotion]:[]));preselect('intensity',v.intensity||'mid');
 }
 function preselect(group,val){if(!val)return;const el=document.querySelector(`[data-group="${group}"] [data-val="${val}"]`);if(el)pick(el);}
 function saveMeal(){
-  const hunger=getPick('hunger'),emotion=getPick('emotion');
-  if(!hunger||!emotion){$('m-err').style.display='block';return;}
+  const hunger=getPick('hunger'),emotions=getPicks('emotion'),emotion=emotions[0];
+  if(!hunger||!emotions.length){$('m-err').style.display='block';return;}
   const name=($('m-name').value||'').trim()||'Приём пищи';
   const kcalRaw=$('m-kcal').value;
   const calories=kcalRaw===''?null:Math.max(0,parseInt(kcalRaw,10)||0);
   const intensity=getPick('intensity')||'mid';
   if(editingId){
     const e=state.entries.find(x=>x.id===editingId);
-    Object.assign(e,{name,calories,emotion,intensity,hunger});
+    Object.assign(e,{name,calories,emotion,emotions,intensity,hunger});
   }else{
-    state.entries.push({id:uid(),ts:Date.now(),type:'meal',name,calories,emotion,intensity,hunger});
+    state.entries.push({id:uid(),ts:Date.now(),type:'meal',name,calories,emotion,emotions,intensity,hunger});
   }
   save();closeModal();render();haptic();
 }
@@ -528,7 +533,7 @@ function stopBefore(){
   openModal(`
     <h3>Пауза</h3><p class="lead">Побудь тут пару минут. Волна спадёт сама.</p>
     <div class="pause"><div class="breathe"></div><p>Вдох… и медленный выдох.<br>Это чувство пройдёт и без еды.</p></div>
-    <div class="field"><label>Что чувствуешь?</label>${chipset(DATA.emotions,'emotion')}</div>
+    <div class="field"><label>Что чувствуешь?</label>${chipset(DATA.emotions,'emotion',false,true)}</div>
     <div class="field"><label>Насколько сильно</label>${chipset(DATA.intensities,'intensity')}</div>
     <div class="err" id="s-err">Отметь эмоцию.</div>
     <div class="big-choice">
@@ -538,19 +543,19 @@ function stopBefore(){
   preselect('intensity','high');
 }
 function stopResisted(){
-  const emotion=getPick('emotion');if(!emotion){$('s-err').style.display='block';return;}
-  state.entries.push({id:uid(),ts:Date.now(),type:'urge',subtype:'before',outcome:'resisted',emotion,intensity:getPick('intensity')||'high',context:null});
+  const emotions=getPicks('emotion'),emotion=emotions[0];if(!emotions.length){$('s-err').style.display='block';return;}
+  state.entries.push({id:uid(),ts:Date.now(),type:'urge',subtype:'before',outcome:'resisted',emotion,emotions,intensity:getPick('intensity')||'high',context:null});
   save();closeModal();render();haptic();
 }
 function stopEatAnyway(){
-  const emotion=getPick('emotion')||null;const intensity=getPick('intensity')||'mid';
+  const emotions=getPicks('emotion');const intensity=getPick('intensity')||'mid';
   closeModal();
-  openMeal({emotion,intensity,hunger:'craving'});
+  openMeal({emotions,intensity,hunger:'craving'});
 }
 function stopDuring(){
   openModal(`
     <h3>Уже ем</h3><p class="lead">Без осуждения — просто заметим, что происходит.</p>
-    <div class="field"><label>Что чувствуешь?</label>${chipset(DATA.emotions,'emotion')}</div>
+    <div class="field"><label>Что чувствуешь?</label>${chipset(DATA.emotions,'emotion',false,true)}</div>
     <div class="field"><label>Насколько сильно</label>${chipset(DATA.intensities,'intensity')}</div>
     <div class="field"><label>Что происходит</label>
       <div class="chipset" data-group="context">
@@ -563,8 +568,8 @@ function stopDuring(){
     </div>`);
 }
 function saveDuring(){
-  const emotion=getPick('emotion');if(!emotion){$('d-err').style.display='block';return;}
-  state.entries.push({id:uid(),ts:Date.now(),type:'urge',subtype:'during',outcome:'logged',emotion,intensity:getPick('intensity')||'mid',context:getPick('context')});
+  const emotions=getPicks('emotion'),emotion=emotions[0];if(!emotions.length){$('d-err').style.display='block';return;}
+  state.entries.push({id:uid(),ts:Date.now(),type:'urge',subtype:'during',outcome:'logged',emotion,emotions,intensity:getPick('intensity')||'mid',context:getPick('context')});
   save();closeModal();render();haptic();
 }
 

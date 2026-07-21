@@ -1,32 +1,104 @@
 {
   "dailyCalorieNorm": 1800,
-  "fastingProtocol": { "eatingHours": 8, "fastingHours": 16 },
+  "fastingProtocol": {
+    "eatingHours": 8,
+    "fastingHours": 16
+  },
   "activityGoalMinutes": 30,
   "emotions": [
-    { "id": "calm", "label": "Спокойствие", "emoji": "🌿" },
-    { "id": "stress", "label": "Стресс", "emoji": "🔥" },
-    { "id": "boredom", "label": "Скука", "emoji": "🫥" },
-    { "id": "joy", "label": "Радость", "emoji": "✨" },
-    { "id": "tired", "label": "Усталость", "emoji": "🥱" },
-    { "id": "anxiety", "label": "Тревога", "emoji": "🌀" },
-    { "id": "lonely", "label": "Одиночество", "emoji": "🌙" }
+    {
+      "id": "calm",
+      "label": "Спокойствие",
+      "emoji": "🌿"
+    },
+    {
+      "id": "stress",
+      "label": "Стресс",
+      "emoji": "🔥"
+    },
+    {
+      "id": "boredom",
+      "label": "Скука",
+      "emoji": "🫥"
+    },
+    {
+      "id": "joy",
+      "label": "Радость",
+      "emoji": "✨"
+    },
+    {
+      "id": "tired",
+      "label": "Усталость",
+      "emoji": "🥱"
+    },
+    {
+      "id": "anxiety",
+      "label": "Тревога",
+      "emoji": "🌀"
+    },
+    {
+      "id": "lonely",
+      "label": "Одиночество",
+      "emoji": "🌙"
+    }
   ],
   "hungerLevels": [
-    { "id": "hungry", "label": "Реально голоден", "physical": true },
-    { "id": "mid", "label": "Средне", "physical": true },
-    { "id": "craving", "label": "Тянет, но не голоден", "physical": false }
+    {
+      "id": "hungry",
+      "label": "Реально голоден",
+      "physical": true
+    },
+    {
+      "id": "mid",
+      "label": "Средне",
+      "physical": true
+    },
+    {
+      "id": "craving",
+      "label": "Тянет, но не голоден",
+      "physical": false
+    }
   ],
   "intensities": [
-    { "id": "low", "label": "Слабая" },
-    { "id": "mid", "label": "Средняя" },
-    { "id": "high", "label": "Сильная" }
+    {
+      "id": "low",
+      "label": "Слабая"
+    },
+    {
+      "id": "mid",
+      "label": "Средняя"
+    },
+    {
+      "id": "high",
+      "label": "Сильная"
+    }
   ],
   "activityTypes": [
-    { "id": "walk", "label": "Ходьба", "emoji": "🚶" },
-    { "id": "workout", "label": "Тренировка", "emoji": "🏋️" },
-    { "id": "yoga", "label": "Йога", "emoji": "🧘" },
-    { "id": "run", "label": "Бег", "emoji": "🏃" },
-    { "id": "stretch", "label": "Растяжка", "emoji": "🤸" }
+    {
+      "id": "walk",
+      "label": "Ходьба",
+      "emoji": "🚶"
+    },
+    {
+      "id": "workout",
+      "label": "Тренировка",
+      "emoji": "🏋️"
+    },
+    {
+      "id": "yoga",
+      "label": "Йога",
+      "emoji": "🧘"
+    },
+    {
+      "id": "run",
+      "label": "Бег",
+      "emoji": "🏃"
+    },
+    {
+      "id": "stretch",
+      "label": "Растяжка",
+      "emoji": "🤸"
+    }
   ],
   "pointsRules": {
     "meal": 10,
@@ -48,11 +120,5 @@
     "Хвали себя за то, что записал, а не за то, что мало съел. Осознанность — и есть цель.",
     "Если тянет к холодильнику на автомате — назови вслух эмоцию. Названное чувство теряет власть."
   ],
-  "sampleEntries": [
-    { "type": "meal", "minutesAgo": 40, "name": "Овсянка с ягодами", "calories": 320, "emotion": "calm", "intensity": "low", "hunger": "hungry" },
-    { "type": "urge", "minutesAgo": 150, "subtype": "before", "emotion": "stress", "intensity": "high", "outcome": "resisted" },
-    { "type": "meal", "minutesAgo": 240, "name": "Печенье к кофе", "calories": 210, "emotion": "boredom", "intensity": "mid", "hunger": "craving" },
-    { "type": "meal", "minutesAgo": 380, "name": "Куриный салат", "calories": 430, "emotion": "tired", "intensity": "mid", "hunger": "mid" },
-    { "type": "activity", "minutesAgo": 300, "activityType": "walk", "minutes": 25 }
-  ]
+  "sampleEntries": []
 }

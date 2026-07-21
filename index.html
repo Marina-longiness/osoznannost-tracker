@@ -300,10 +300,10 @@ function emotionSummary(){
   return {total:meals.length,nh:noH.length,topEmo,topTime};
 }
 function fastingInfo(){
-  const lm=lastMealTs();
+  const start=state.fastingStart||lastMealTs();
   const goalMs=(state.protocol.fastingHours)*3600000;
-  if(!lm)return{none:true,goalMs};
-  const el=Date.now()-lm;
+  if(!start)return{none:true,goalMs};
+  const el=Date.now()-start;
   return{none:false,el,goalMs,done:el>=goalMs};
 }
 function dur(ms){const m=Math.max(0,Math.floor(ms/60000));return Math.floor(m/60)+'ч '+two(m%60)+'м';}
@@ -422,6 +422,11 @@ function renderProgress(){
     <div class="block"><div class="p-card">
       <p class="p-title">🕒 Интервальное голодание</p>
       <div class="seg">${protos.map(p=>`<button class="${state.protocol.fastingHours==p[0]?'on':''}" onclick="setProto(${p[0]},${p[1]})">${p[0]}:${p[1]}</button>`).join('')}</div>
+      <div class="seg" style="margin-top:10px">
+        <button class="${state.fastingStart?'on':''}" onclick="startFast()">▶ Начать голодание</button>
+        <button onclick="resetFast()">↺ Сброс</button>
+      </div>
+      <div class="sub" style="margin-top:8px">${state.fastingStart?'Голодание запущено вручную':'Идёт от последнего приёма пищи. Можно запустить вручную кнопкой.'}</div>
       <div class="big-fast">${f.none?'—':dur(f.el)}</div>
       <div class="sub">${f.none?'Пока нет приёмов пищи':(f.done?'Цель '+state.protocol.fastingHours+'ч достигнута · окно открыто':'Идёт голодание · цель '+state.protocol.fastingHours+'ч')}</div>
       <div class="days">${days.map(d=>`<div class="d ${d.hit?'hit':''}"><div class="dot">${d.n}</div><div class="dl">${d.l}</div></div>`).join('')}</div>
@@ -462,6 +467,8 @@ function switchTab(t){tab=t;render();window.scrollTo(0,0);}
 function nextTip(){tipIndex=(tipIndex+Math.floor(Math.random()*(DATA.tips.length-1))+1)%DATA.tips.length;render();}
 function del(id){state.entries=state.entries.filter(e=>e.id!==id);save();render();haptic();}
 function setProto(f,e){state.protocol={fastingHours:f,eatingHours:e};save();render();}
+function startFast(){state.fastingStart=Date.now();save();render();haptic();}
+function resetFast(){state.fastingStart=null;save();render();haptic();}
 function haptic(){try{Telegram.WebApp.HapticFeedback.impactOccurred('light');}catch(e){}}
 function wipeAll(){var go=function(ok){if(ok){state.entries=[];save();render();haptic();}};try{if(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.showConfirm){Telegram.WebApp.showConfirm('Удалить ВСЕ записи? Это нельзя отменить.',go);return;}}catch(e){}go(window.confirm('Удалить ВСЕ записи?'));}
 
@@ -494,7 +501,8 @@ function mealSheet(title,lead,v){
     <div class="field"><label>Голод до еды <span class="req">*</span></label>${chipset(DATA.hungerLevels,'hunger')}</div>
     <div class="field"><label>Эмоция <span class="req">*</span> <span style="color:#8C8F86;font-weight:600">(до 2)</span></label>${chipset(DATA.emotions,'emotion',false,true)}</div>
     <div class="field"><label>Интенсивность</label>${chipset(DATA.intensities,'intensity')}</div>
-    <div class="field"><label>Калории (по желанию)</label><input type="number" id="m-kcal" inputmode="numeric" placeholder="можно пропустить" value="${v.calories!=null&&v.calories!==''?v.calories:''}"></div>
+    <div class="field"><label>Калории (по желанию)</label><input type="number" id="m-kcal" inputmode="numeric" placeholder="можно пропустить" value="${v.calories!=null&&v.calories!==''?v.calories:''}">
+      <div style="font-size:12px;color:#8C8F86;font-weight:600;margin-top:8px">💬 Не знаешь калории? Напиши блюдо или пришли фото боту — он посчитает и добавит запись сам.</div></div>
     <div class="err" id="m-err">Отметь голод и эмоцию — это ядро записи.</div>
     <div class="sheet-actions">
       <button class="b-ghost" onclick="closeModal()">Отмена</button>

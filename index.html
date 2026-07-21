@@ -595,6 +595,15 @@ function showFallback(){
     <button onclick="boot()">Попробовать снова</button></div>`;
   $('nav').style.display='none';$('actionbar').style.display='none';
 }
+function syncFromServer(){
+  fetch('entries.json?v='+Date.now()).then(function(r){return r.ok?r.json():[];}).then(function(list){
+    if(!Array.isArray(list))return;
+    var have={};state.entries.forEach(function(e){have[e.id]=1;});
+    var added=0;
+    list.forEach(function(e){if(e&&e.id&&!have[e.id]){state.entries.push(e);added++;}});
+    if(added){save();render();}
+  }).catch(function(){});
+}
 function boot(){
   fetch('data.json?v='+Date.now())
     .then(r=>{if(!r.ok)throw new Error('http');return r.json();})
@@ -606,7 +615,9 @@ function boot(){
       tipIndex=Math.floor(Math.random()*DATA.tips.length);
       $('nav').style.display='flex';
       render();
+      syncFromServer();
       setInterval(()=>{if(tab==='today'||tab==='progress')render();},60000);
+      setInterval(syncFromServer,30000);
     })
     .catch(()=>showFallback());
 }

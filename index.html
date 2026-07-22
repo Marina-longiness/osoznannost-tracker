@@ -279,6 +279,7 @@ function caloriesToday(){return todayMeals().reduce((s,e)=>s+(Number(e.calories)
 function macroToday(k){return todayMeals().reduce((s,e)=>s+(Number(e[k])||0),0);}
 function burnedToday(){return todayActs().reduce((s,e)=>s+(Number(e.burned)||0),0);}
 function stepsToday(){return todayActs().reduce((s,e)=>s+(Number(e.steps)||0),0);}
+function motivText(m,g){if(m<=0)return 'Начни двигаться — даже 5 минут считаются 💪';if(m<g)return 'Ещё '+(g-m)+' мин до цели дня 🎯';return 'Цель дня достигнута! Ты супер 🎉';}
 function lastMealTs(){const m=state.entries.filter(e=>e.type==='meal').sort((a,b)=>b.ts-a.ts);return m.length?m[0].ts:null;}
 function entryPoints(e){
   if(e.type==='meal')return DATA.pointsRules.meal;
@@ -424,6 +425,8 @@ function renderProgress(){
   const acts=todayActs();
   const amin=acts.reduce((s,e)=>s+(Number(e.minutes)||0),0);
   const goal=DATA.activityGoalMinutes;
+  const actSet=new Set(state.entries.filter(e=>e.type==='activity').map(e=>dayKey(e.ts)));
+  let actDaysHTML='';{const dda=new Date();dda.setDate(dda.getDate()-6);for(let i=0;i<7;i++){const k=dayKey(dda.getTime());const hit=actSet.has(k);actDaysHTML+=`<div class="d ${hit?'hit':''}"><div class="dot">${hit?'🔥':dda.getDate()}</div><div class="dl">${wd[dda.getDay()]}</div></div>`;dda.setDate(dda.getDate()+1);}}
 
   return `
     <div class="top"><div class="hi"><h1>Прогресс</h1><p>Голодание · активность · осознанность</p></div></div>
@@ -454,11 +457,20 @@ function renderProgress(){
     </div></div>
 
     <div class="block"><div class="p-card">
-      <p class="p-title">🏃 Физическая активность</p>
-      <div class="act-total"><b>${amin}</b><span class="sub" style="padding-bottom:3px">/ ${goal} мин сегодня</span></div>
-      <div class="bar on-light"><i style="width:${Math.min(100,Math.round(amin/goal*100))}%"></i></div>
-      <div class="act-total" style="margin-top:14px"><b>🔥 ${Math.round(burnedToday())}</b><span class="sub" style="padding-bottom:3px">ккал потрачено${stepsToday()?` · ${stepsToday()} шагов`:''}</span></div>
-      <div class="act-list">${acts.length?acts.map(a=>`<div class="act-item"><span class="al">${act(a.activityType).emoji} ${act(a.activityType).label}</span><span class="ar">${a.steps?a.steps+' шагов':(a.minutes+' мин')}${a.burned?' · '+a.burned+' ккал':''} · ${fmtTime(a.ts)}</span></div>`).join(''):'<div class="sub" style="text-align:center;padding:8px">Сегодня активности пока нет</div>'}</div>
+      <p class="p-title">🏃 Активность сегодня</p>
+      <div style="display:flex;align-items:center;gap:18px;margin:8px 0 6px">
+        <div class="ring" style="--p:${Math.min(360,Math.round(amin/goal*360))}deg;width:94px;height:94px;flex:0 0 94px">
+          <b style="font-size:15px">${Math.min(100,Math.round(amin/goal*100))}%</b>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:28px;font-weight:800;letter-spacing:-1px;line-height:1">🔥 ${Math.round(burnedToday())} <span style="font-size:13px;font-weight:700;color:var(--muted)">ккал</span></div>
+          <div class="sub" style="margin-top:5px">${amin} / ${goal} мин${stepsToday()?` · ${stepsToday()} шагов`:''}</div>
+          <div style="margin-top:9px;font-size:13.5px;font-weight:800;color:${amin>=goal?'#4a5a12':'var(--ink)'}">${motivText(amin,goal)}</div>
+        </div>
+      </div>
+      <div class="days" style="margin-top:4px">${actDaysHTML}</div>
+      <div class="sub" style="margin-top:8px">🔥 — активные дни за неделю</div>
+      <div class="act-list" style="margin-top:14px">${acts.length?acts.map(a=>`<div class="act-item"><span class="al">${act(a.activityType).emoji} ${act(a.activityType).label}</span><span class="ar">${a.steps?a.steps+' шагов':(a.minutes+' мин')}${a.burned?' · '+a.burned+' ккал':''} · ${fmtTime(a.ts)}</span></div>`).join(''):'<div class="sub" style="text-align:center;padding:10px">Сегодня активности пока нет — начни с 5 минут 💪</div>'}</div>
       <button class="add-mini" onclick="openActivity()">+ Добавить активность</button>
     </div></div>
 

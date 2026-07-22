@@ -1,11 +1,1 @@
-[
-  {"id":"a-1784755107008","ts":1784755107008,"type":"activity","activityType":"workout","minutes":5,"burned":25},
-  {"id":"a-1784755107022","ts":1784755107022,"type":"activity","activityType":"stretch","minutes":4,"burned":8},
-  {"id":"a-1784755107035","ts":1784755107035,"type":"activity","activityType":"yoga","minutes":10,"burned":30},
-  {"id":"a-1784755107050","ts":1784755107050,"type":"activity","activityType":"run","minutes":20,"burned":200},
-  {"id":"a-1784755107064","ts":1784755107064,"type":"activity","activityType":"walk","minutes":0,"steps":6000,"burned":240},
-  {"id":"a-1784755123281","ts":1784755123281,"type":"meal","name":"Яблоко","calories":80,"protein":0,"fat":0,"carbs":21,"emotion":"calm","emotions":["calm"],"intensity":"low","hunger":"mid"},
-  {"id":"a-1784755123282","ts":1784755123282,"type":"meal","name":"Гречка с куриной грудкой (200г)","calories":350,"protein":30,"fat":8,"carbs":40,"emotion":"calm","emotions":["calm"],"intensity":"low","hunger":"mid"},
-  {"id":"a-1784755123283","ts":1784755123283,"type":"meal","name":"Кусок пиццы","calories":285,"protein":12,"fat":10,"carbs":36,"emotion":"calm","emotions":["calm"],"intensity":"low","hunger":"mid"},
-  {"id":"a-1784755123284","ts":1784755123284,"type":"meal","name":"Банан","calories":105,"protein":1,"fat":0,"carbs":27,"emotion":"calm","emotions":["calm"],"intensity":"low","hunger":"mid"}
-]
+[]

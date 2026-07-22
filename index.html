@@ -432,7 +432,18 @@ function renderProgress(){
         <button class="${state.fastingStart?'on':''}" onclick="startFast()">▶ Начать голодание</button>
         <button onclick="resetFast()">↺ Сброс</button>
       </div>
-      <div class="sub" style="margin-top:8px">${state.fastingStart?'Голодание запущено вручную':'Идёт от последнего приёма пищи. Можно запустить вручную кнопкой.'}</div>
+      <div class="sub" style="margin-top:8px">${state.fastingStart?'Голодание запущено вручную':'Идёт от последнего приёма пищи. Можно задать вручную ниже.'}</div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid #EEE">
+        <div class="sub" style="margin-bottom:8px">Задать начало голодания вручную:</div>
+        <div class="chipset" data-group="fday" style="margin-bottom:8px">
+          <button type="button" class="ch sel" data-val="today" onclick="pick(this)">Сегодня</button>
+          <button type="button" class="ch" data-val="yesterday" onclick="pick(this)">Вчера</button>
+        </div>
+        <div style="display:flex;gap:8px">
+          <input type="time" id="f-time" value="${state.fastingStart?fmtTime(state.fastingStart):nowHHMM()}" style="flex:1">
+          <button class="add-mini" style="width:auto;padding:0 18px;margin:0" onclick="setFastStart()">Задать</button>
+        </div>
+      </div>
       <div class="big-fast">${f.none?'—':dur(f.el)}</div>
       <div class="sub">${f.none?'Пока нет приёмов пищи':(f.done?'Цель '+state.protocol.fastingHours+'ч достигнута · окно открыто':'Идёт голодание · цель '+state.protocol.fastingHours+'ч')}</div>
       <div class="days">${days.map(d=>`<div class="d ${d.hit?'hit':''}"><div class="dot">${d.n}</div><div class="dl">${d.l}</div></div>`).join('')}</div>
@@ -475,6 +486,7 @@ function del(id){state.entries=state.entries.filter(e=>e.id!==id);save();render(
 function setProto(f,e){state.protocol={fastingHours:f,eatingHours:e};save();render();}
 function startFast(){state.fastingStart=Date.now();save();render();haptic();}
 function resetFast(){state.fastingStart=null;save();render();haptic();}
+function setFastStart(){var t=$('f-time')?$('f-time').value:'';state.fastingStart=tsFrom(getPick('fday')||'today',t);save();render();haptic();}
 function haptic(){try{Telegram.WebApp.HapticFeedback.impactOccurred('light');}catch(e){}}
 function wipeAll(){var go=function(ok){if(ok){state.entries=[];save();render();haptic();}};try{if(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.showConfirm){Telegram.WebApp.showConfirm('Удалить ВСЕ записи? Это нельзя отменить.',go);return;}}catch(e){}go(window.confirm('Удалить ВСЕ записи?'));}
 

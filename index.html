@@ -182,7 +182,7 @@
     .field{margin-bottom:16px;}
     .field label{display:block;font-size:12.5px;font-weight:800;margin-bottom:9px;color:#5C5F57;}
     .field label .req{color:#B0665C;}
-    input[type=text],input[type=number]{width:100%;border:none;background:var(--card);border-radius:14px;padding:14px;
+    input[type=text],input[type=number],input[type=time]{width:100%;border:none;background:var(--card);border-radius:14px;padding:14px;
       font-size:15px;font-weight:600;font-family:inherit;outline:none;}
     .chipset{display:flex;flex-wrap:wrap;gap:8px;}
     .ch{border:none;background:var(--card);border-radius:999px;padding:10px 14px;font-size:13.5px;font-weight:700;
@@ -244,6 +244,8 @@ try{ if(window.Telegram&&Telegram.WebApp){ Telegram.WebApp.ready(); Telegram.Web
 const $=id=>document.getElementById(id);
 const uid=()=>'e'+Date.now()+Math.floor(Math.random()*1e6);
 const two=n=>String(n).padStart(2,'0');
+function nowHHMM(){var d=new Date();return two(d.getHours())+':'+two(d.getMinutes());}
+function tsFrom(day,hhmm){var d=new Date();if(day==='yesterday')d.setDate(d.getDate()-1);if(hhmm&&/^\d{1,2}:\d{2}$/.test(hhmm)){var pp=hhmm.split(':');d.setHours(+pp[0],+pp[1],0,0);}return d.getTime();}
 function fmtTime(ts){const d=new Date(ts);return two(d.getHours())+':'+two(d.getMinutes());}
 function dayKey(ts){const d=new Date(ts);return d.getFullYear()+'-'+two(d.getMonth()+1)+'-'+two(d.getDate());}
 function isToday(ts){return dayKey(ts)===dayKey(Date.now());}
@@ -513,6 +515,12 @@ function mealSheet(title,lead,v){
         <input type="number" id="m-fat" inputmode="numeric" placeholder="Жиры" value="${v.fat!=null&&v.fat!==''?v.fat:''}">
         <input type="number" id="m-carb" inputmode="numeric" placeholder="Углев" value="${v.carbs!=null&&v.carbs!==''?v.carbs:''}">
       </div></div>
+    ${!editingId?`<div class="field"><label>Когда</label>
+      <div class="chipset" data-group="mday" style="margin-bottom:8px">
+        <button type="button" class="ch sel" data-val="today" onclick="pick(this)">Сегодня</button>
+        <button type="button" class="ch" data-val="yesterday" onclick="pick(this)">Вчера</button>
+      </div>
+      <input type="time" id="m-time" value="${nowHHMM()}"></div>`:''}
     <div class="err" id="m-err">Отметь голод и эмоцию — это ядро записи.</div>
     <div class="sheet-actions">
       <button class="b-ghost" onclick="closeModal()">Отмена</button>
@@ -534,7 +542,7 @@ function saveMeal(){
     const e=state.entries.find(x=>x.id===editingId);
     Object.assign(e,{name,calories,protein,fat,carbs,emotion,emotions,intensity,hunger});
   }else{
-    state.entries.push({id:uid(),ts:Date.now(),type:'meal',name,calories,protein,fat,carbs,emotion,emotions,intensity,hunger});
+    state.entries.push({id:uid(),ts:tsFrom(getPick('mday'),$('m-time')?$('m-time').value:''),type:'meal',name,calories,protein,fat,carbs,emotion,emotions,intensity,hunger});
   }
   save();closeModal();render();haptic();
 }
@@ -599,6 +607,12 @@ function openActivity(){
     <h3>Добавить активность</h3><p class="lead">Движение — тоже забота о себе.</p>
     <div class="field"><label>Что делал(а)</label>${chipset(DATA.activityTypes,'act')}</div>
     <div class="field"><label>Сколько минут</label><input type="number" id="a-min" inputmode="numeric" placeholder="например, 30"></div>
+    <div class="field"><label>Когда</label>
+      <div class="chipset" data-group="aday" style="margin-bottom:8px">
+        <button type="button" class="ch sel" data-val="today" onclick="pick(this)">Сегодня</button>
+        <button type="button" class="ch" data-val="yesterday" onclick="pick(this)">Вчера</button>
+      </div>
+      <input type="time" id="a-time" value="${nowHHMM()}"></div>
     <div class="err" id="a-err">Выбери тип и укажи минуты.</div>
     <div class="sheet-actions">
       <button class="b-ghost" onclick="closeModal()">Отмена</button>
@@ -608,7 +622,7 @@ function openActivity(){
 function saveActivity(){
   const at=getPick('act');const min=parseInt($('a-min').value,10);
   if(!at||!min||min<=0){$('a-err').style.display='block';return;}
-  state.entries.push({id:uid(),ts:Date.now(),type:'activity',activityType:at,minutes:min});
+  state.entries.push({id:uid(),ts:tsFrom(getPick('aday'),$('a-time')?$('a-time').value:''),type:'activity',activityType:at,minutes:min});
   save();closeModal();render();haptic();
 }
 

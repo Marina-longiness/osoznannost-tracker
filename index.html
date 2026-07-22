@@ -277,7 +277,8 @@ const todayUrges=()=>todayEntries().filter(e=>e.type==='urge');
 const todayActs=()=>todayEntries().filter(e=>e.type==='activity');
 function caloriesToday(){return todayMeals().reduce((s,e)=>s+(Number(e.calories)||0),0);}
 function macroToday(k){return todayMeals().reduce((s,e)=>s+(Number(e[k])||0),0);}
-function burnedToday(){return todayActs().reduce((s,e)=>s+(Number(e.burned)||0),0);}
+function entryBurned(e){if(e.burned!=null&&e.burned!=='')return Number(e.burned)||0;var rate={walk:4,run:10,workout:8,yoga:3,stretch:2};if(Number(e.steps))return Math.round(Number(e.steps)*0.04);if(Number(e.minutes))return Math.round(Number(e.minutes)*(rate[e.activityType]||4));return 0;}
+function burnedToday(){return todayActs().reduce((s,e)=>s+entryBurned(e),0);}
 function stepsToday(){return todayActs().reduce((s,e)=>s+(Number(e.steps)||0),0);}
 function motivText(m,g){if(m<=0)return 'Начни двигаться — даже 5 минут считаются 💪';if(m<g)return 'Ещё '+(g-m)+' мин до цели дня 🎯';return 'Цель дня достигнута! Ты супер 🎉';}
 function lastMealTs(){const m=state.entries.filter(e=>e.type==='meal').sort((a,b)=>b.ts-a.ts);return m.length?m[0].ts:null;}
@@ -470,7 +471,7 @@ function renderProgress(){
       </div>
       <div class="days" style="margin-top:4px">${actDaysHTML}</div>
       <div class="sub" style="margin-top:8px">🔥 — активные дни за неделю</div>
-      <div class="act-list" style="margin-top:14px">${acts.length?acts.map(a=>`<div class="act-item"><span class="al">${act(a.activityType).emoji} ${act(a.activityType).label}</span><span class="ar">${a.steps?a.steps+' шагов':(a.minutes+' мин')}${a.burned?' · '+a.burned+' ккал':''} · ${fmtTime(a.ts)}</span></div>`).join(''):'<div class="sub" style="text-align:center;padding:10px">Сегодня активности пока нет — начни с 5 минут 💪</div>'}</div>
+      <div class="act-list" style="margin-top:14px">${acts.length?acts.map(a=>`<div class="act-item"><span class="al">${act(a.activityType).emoji} ${act(a.activityType).label}</span><span class="ar">${a.steps?a.steps+' шагов':(a.minutes+' мин')}${entryBurned(a)?' · '+entryBurned(a)+' ккал':''} · ${fmtTime(a.ts)}</span></div>`).join(''):'<div class="sub" style="text-align:center;padding:10px">Сегодня активности пока нет — начни с 5 минут 💪</div>'}</div>
       <button class="add-mini" onclick="openActivity()">+ Добавить активность</button>
     </div></div>
 

@@ -1,1 +1,7 @@
-[]
+[
+  {"id":"a-1784755107008","ts":1784755107008,"type":"activity","activityType":"workout","minutes":5,"burned":25},
+  {"id":"a-1784755107022","ts":1784755107022,"type":"activity","activityType":"stretch","minutes":4,"burned":8},
+  {"id":"a-1784755107035","ts":1784755107035,"type":"activity","activityType":"yoga","minutes":10,"burned":30},
+  {"id":"a-1784755107050","ts":1784755107050,"type":"activity","activityType":"run","minutes":20,"burned":200},
+  {"id":"a-1784755107064","ts":1784755107064,"type":"activity","activityType":"walk","minutes":0,"steps":6000,"burned":240}
+]

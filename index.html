@@ -277,6 +277,8 @@ const todayUrges=()=>todayEntries().filter(e=>e.type==='urge');
 const todayActs=()=>todayEntries().filter(e=>e.type==='activity');
 function caloriesToday(){return todayMeals().reduce((s,e)=>s+(Number(e.calories)||0),0);}
 function macroToday(k){return todayMeals().reduce((s,e)=>s+(Number(e[k])||0),0);}
+function burnedToday(){return todayActs().reduce((s,e)=>s+(Number(e.burned)||0),0);}
+function stepsToday(){return todayActs().reduce((s,e)=>s+(Number(e.steps)||0),0);}
 function lastMealTs(){const m=state.entries.filter(e=>e.type==='meal').sort((a,b)=>b.ts-a.ts);return m.length?m[0].ts:null;}
 function entryPoints(e){
   if(e.type==='meal')return DATA.pointsRules.meal;
@@ -352,6 +354,7 @@ function renderToday(){
         <div class="kcal-num">${kc}<small> / ${norm}</small></div>
         <div class="bar"><i style="width:${pct}%"></i></div>
         <div class="macros">Б ${Math.round(macroToday('protein'))} · Ж ${Math.round(macroToday('fat'))} · У ${Math.round(macroToday('carbs'))} <small>г</small></div>
+        <div class="macros">🔥 Потрачено ${Math.round(burnedToday())} · Баланс ${kc-Math.round(burnedToday())} <small>ккал</small></div>
       </div>
       <div class="card lime">
         <p class="card-label">Эмоции и еда</p>
@@ -454,7 +457,8 @@ function renderProgress(){
       <p class="p-title">🏃 Физическая активность</p>
       <div class="act-total"><b>${amin}</b><span class="sub" style="padding-bottom:3px">/ ${goal} мин сегодня</span></div>
       <div class="bar on-light"><i style="width:${Math.min(100,Math.round(amin/goal*100))}%"></i></div>
-      <div class="act-list">${acts.length?acts.map(a=>`<div class="act-item"><span class="al">${act(a.activityType).emoji} ${act(a.activityType).label}</span><span class="ar">${a.minutes} мин · ${fmtTime(a.ts)}</span></div>`).join(''):'<div class="sub" style="text-align:center;padding:8px">Сегодня активности пока нет</div>'}</div>
+      <div class="act-total" style="margin-top:14px"><b>🔥 ${Math.round(burnedToday())}</b><span class="sub" style="padding-bottom:3px">ккал потрачено${stepsToday()?` · ${stepsToday()} шагов`:''}</span></div>
+      <div class="act-list">${acts.length?acts.map(a=>`<div class="act-item"><span class="al">${act(a.activityType).emoji} ${act(a.activityType).label}</span><span class="ar">${a.steps?a.steps+' шагов':(a.minutes+' мин')}${a.burned?' · '+a.burned+' ккал':''} · ${fmtTime(a.ts)}</span></div>`).join(''):'<div class="sub" style="text-align:center;padding:8px">Сегодня активности пока нет</div>'}</div>
       <button class="add-mini" onclick="openActivity()">+ Добавить активность</button>
     </div></div>
 
@@ -618,23 +622,30 @@ function openActivity(){
   openModal(`
     <h3>Добавить активность</h3><p class="lead">Движение — тоже забота о себе.</p>
     <div class="field"><label>Что делал(а)</label>${chipset(DATA.activityTypes,'act')}</div>
-    <div class="field"><label>Сколько минут</label><input type="number" id="a-min" inputmode="numeric" placeholder="например, 30"></div>
+    <div class="field"><label>Сколько минут (или оставь пусто для шагов)</label><input type="number" id="a-min" inputmode="numeric" placeholder="например, 30"></div>
+    <div class="field"><label>Шаги (по желанию)</label><input type="number" id="a-steps" inputmode="numeric" placeholder="например, 8000"></div>
+    <div class="field"><label>Калории потрачено (по желанию)</label><input type="number" id="a-burn" inputmode="numeric" placeholder="если пусто — оценит бот"></div>
     <div class="field"><label>Когда</label>
       <div class="chipset" data-group="aday" style="margin-bottom:8px">
         <button type="button" class="ch sel" data-val="today" onclick="pick(this)">Сегодня</button>
         <button type="button" class="ch" data-val="yesterday" onclick="pick(this)">Вчера</button>
       </div>
       <input type="time" id="a-time" value="${nowHHMM()}"></div>
-    <div class="err" id="a-err">Выбери тип и укажи минуты.</div>
+    <div class="err" id="a-err">Выбери тип и укажи минуты или шаги.</div>
     <div class="sheet-actions">
       <button class="b-ghost" onclick="closeModal()">Отмена</button>
       <button class="b-lime" onclick="saveActivity()">Сохранить</button>
     </div>`);
 }
 function saveActivity(){
-  const at=getPick('act');const min=parseInt($('a-min').value,10);
-  if(!at||!min||min<=0){$('a-err').style.display='block';return;}
-  state.entries.push({id:uid(),ts:tsFrom(getPick('aday'),$('a-time')?$('a-time').value:''),type:'activity',activityType:at,minutes:min});
+  const at=getPick('act');
+  const min=parseInt($('a-min').value,10)||0;
+  const steps=parseInt($('a-steps').value,10)||0;
+  const burned=parseInt($('a-burn').value,10)||0;
+  if(!at||(min<=0&&steps<=0)){$('a-err').style.display='block';return;}
+  const e={id:uid(),ts:tsFrom(getPick('aday'),$('a-time')?$('a-time').value:''),type:'activity',activityType:at,minutes:min};
+  if(steps>0)e.steps=steps; if(burned>0)e.burned=burned;
+  state.entries.push(e);
   save();closeModal();render();haptic();
 }
 

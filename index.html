@@ -57,6 +57,8 @@
     .card-label{font-size:12px;font-weight:700;opacity:.7;margin:0 0 10px;text-transform:none;letter-spacing:.2px;}
     .kcal-num{font-size:30px;font-weight:800;letter-spacing:-1px;line-height:1;}
     .kcal-num small{font-size:14px;font-weight:600;opacity:.55;}
+    .macros{margin-top:12px;font-size:13.5px;font-weight:700;color:rgba(255,255,255,.72);}
+    .macros small{opacity:.55;}
     .bar{height:8px;border-radius:999px;background:rgba(255,255,255,.16);margin-top:14px;overflow:hidden;}
     .bar.on-light{background:rgba(0,0,0,.08);}
     .bar > i{display:block;height:100%;border-radius:999px;background:var(--lime);transition:width .4s ease;}
@@ -272,6 +274,7 @@ const todayMeals=()=>todayEntries().filter(e=>e.type==='meal');
 const todayUrges=()=>todayEntries().filter(e=>e.type==='urge');
 const todayActs=()=>todayEntries().filter(e=>e.type==='activity');
 function caloriesToday(){return todayMeals().reduce((s,e)=>s+(Number(e.calories)||0),0);}
+function macroToday(k){return todayMeals().reduce((s,e)=>s+(Number(e[k])||0),0);}
 function lastMealTs(){const m=state.entries.filter(e=>e.type==='meal').sort((a,b)=>b.ts-a.ts);return m.length?m[0].ts:null;}
 function entryPoints(e){
   if(e.type==='meal')return DATA.pointsRules.meal;
@@ -346,6 +349,7 @@ function renderToday(){
         <p class="card-label">Калории сегодня</p>
         <div class="kcal-num">${kc}<small> / ${norm}</small></div>
         <div class="bar"><i style="width:${pct}%"></i></div>
+        <div class="macros">Б ${Math.round(macroToday('protein'))} · Ж ${Math.round(macroToday('fat'))} · У ${Math.round(macroToday('carbs'))} <small>г</small></div>
       </div>
       <div class="card lime">
         <p class="card-label">Эмоции и еда</p>
@@ -502,7 +506,13 @@ function mealSheet(title,lead,v){
     <div class="field"><label>Эмоция <span class="req">*</span> <span style="color:#8C8F86;font-weight:600">(до 2)</span></label>${chipset(DATA.emotions,'emotion',false,true)}</div>
     <div class="field"><label>Интенсивность</label>${chipset(DATA.intensities,'intensity')}</div>
     <div class="field"><label>Калории (по желанию)</label><input type="number" id="m-kcal" inputmode="numeric" placeholder="можно пропустить" value="${v.calories!=null&&v.calories!==''?v.calories:''}">
-      <div style="font-size:12px;color:#8C8F86;font-weight:600;margin-top:8px">💬 Не знаешь калории? Напиши блюдо или пришли фото боту — он посчитает и добавит запись сам.</div></div>
+      <div style="font-size:12px;color:#8C8F86;font-weight:600;margin-top:8px">💬 Не знаешь калории/КБЖУ? Напиши блюдо или пришли фото боту — он посчитает сам.</div></div>
+    <div class="field"><label>КБЖУ (по желанию, граммы)</label>
+      <div style="display:flex;gap:8px">
+        <input type="number" id="m-prot" inputmode="numeric" placeholder="Белки" value="${v.protein!=null&&v.protein!==''?v.protein:''}">
+        <input type="number" id="m-fat" inputmode="numeric" placeholder="Жиры" value="${v.fat!=null&&v.fat!==''?v.fat:''}">
+        <input type="number" id="m-carb" inputmode="numeric" placeholder="Углев" value="${v.carbs!=null&&v.carbs!==''?v.carbs:''}">
+      </div></div>
     <div class="err" id="m-err">Отметь голод и эмоцию — это ядро записи.</div>
     <div class="sheet-actions">
       <button class="b-ghost" onclick="closeModal()">Отмена</button>
@@ -517,12 +527,14 @@ function saveMeal(){
   const name=($('m-name').value||'').trim()||'Приём пищи';
   const kcalRaw=$('m-kcal').value;
   const calories=kcalRaw===''?null:Math.max(0,parseInt(kcalRaw,10)||0);
+  const gnum=id=>{var x=$(id)?$(id).value:'';return x===''?null:Math.max(0,parseInt(x,10)||0);};
+  const protein=gnum('m-prot'),fat=gnum('m-fat'),carbs=gnum('m-carb');
   const intensity=getPick('intensity')||'mid';
   if(editingId){
     const e=state.entries.find(x=>x.id===editingId);
-    Object.assign(e,{name,calories,emotion,emotions,intensity,hunger});
+    Object.assign(e,{name,calories,protein,fat,carbs,emotion,emotions,intensity,hunger});
   }else{
-    state.entries.push({id:uid(),ts:Date.now(),type:'meal',name,calories,emotion,emotions,intensity,hunger});
+    state.entries.push({id:uid(),ts:Date.now(),type:'meal',name,calories,protein,fat,carbs,emotion,emotions,intensity,hunger});
   }
   save();closeModal();render();haptic();
 }

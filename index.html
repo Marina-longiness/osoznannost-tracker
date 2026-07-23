@@ -510,13 +510,13 @@ function escapeHtml(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'
 /* ================= ACTIONS ================= */
 function switchTab(t){tab=t;render();window.scrollTo(0,0);}
 function nextTip(){tipIndex=(tipIndex+Math.floor(Math.random()*(DATA.tips.length-1))+1)%DATA.tips.length;render();}
-function del(id){state.entries=state.entries.filter(e=>e.id!==id);save();render();haptic();}
+function del(id){state.deleted=state.deleted||[];state.deleted.push(id);state.entries=state.entries.filter(e=>e.id!==id);save();render();haptic();}
 function setProto(f,e){state.protocol={fastingHours:f,eatingHours:e};save();render();}
 function startFast(){state.fastingStart=Date.now();save();render();haptic();}
 function resetFast(){state.fastingStart=null;save();render();haptic();}
 function setFastStart(){var t=$('f-time')?$('f-time').value:'';state.fastingStart=tsFrom(getPick('fday')||'today',t);save();render();haptic();}
 function haptic(){try{Telegram.WebApp.HapticFeedback.impactOccurred('light');}catch(e){}}
-function wipeAll(){var go=function(ok){if(ok){state.entries=[];save();render();haptic();}};try{if(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.showConfirm){Telegram.WebApp.showConfirm('Удалить ВСЕ записи? Это нельзя отменить.',go);return;}}catch(e){}go(window.confirm('Удалить ВСЕ записи?'));}
+function wipeAll(){var go=function(ok){if(ok){state.deleted=(state.deleted||[]).concat(state.entries.map(function(e){return e.id;}));state.entries=[];save();render();haptic();}};try{if(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.showConfirm){Telegram.WebApp.showConfirm('Удалить ВСЕ записи? Это нельзя отменить.',go);return;}}catch(e){}go(window.confirm('Удалить ВСЕ записи?'));}
 
 /* ---- modal core ---- */
 function openModal(html){$('sheet').innerHTML=html;$('overlay').classList.add('open');}
@@ -687,8 +687,9 @@ function syncFromServer(){
   fetch('entries.json?v='+Date.now()).then(function(r){return r.ok?r.json():[];}).then(function(list){
     if(!Array.isArray(list))return;
     var have={};state.entries.forEach(function(e){have[e.id]=1;});
+    var del={};(state.deleted||[]).forEach(function(id){del[id]=1;});
     var added=0;
-    list.forEach(function(e){if(e&&e.id&&!have[e.id]){state.entries.push(e);added++;}});
+    list.forEach(function(e){if(e&&e.id&&!have[e.id]&&!del[e.id]){state.entries.push(e);added++;}});
     if(added){save();render();}
   }).catch(function(){});
 }

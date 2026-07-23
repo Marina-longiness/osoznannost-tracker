@@ -36,5 +36,21 @@
     ],
     "intensity": "low",
     "hunger": "hungry"
+  },
+  {
+    "id": "a-1784809651523",
+    "ts": 1784809651523,
+    "type": "meal",
+    "name": "Печенье детское Бегемотик Бонди (40г)",
+    "calories": 164,
+    "protein": 3,
+    "fat": 5,
+    "carbs": 28,
+    "emotion": "calm",
+    "emotions": [
+      "calm"
+    ],
+    "intensity": "low",
+    "hunger": "mid"
   }
 ]

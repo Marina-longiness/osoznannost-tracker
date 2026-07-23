@@ -28,14 +28,5 @@
     "activityType": "workout",
     "minutes": 2,
     "burned": 10
-  },
-  {
-    "id": "a-1784807863715",
-    "ts": 1784754780000,
-    "type": "activity",
-    "activityType": "walk",
-    "minutes": 0,
-    "steps": 16000,
-    "burned": 640
   }
 ]

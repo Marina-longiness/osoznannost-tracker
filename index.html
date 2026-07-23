@@ -447,8 +447,8 @@ function renderProgress(){
       <p class="p-title">🕒 Интервальное голодание</p>
       <div class="seg">${protos.map(p=>`<button class="${state.protocol.fastingHours==p[0]?'on':''}" onclick="setProto(${p[0]},${p[1]})">${p[0]}:${p[1]}</button>`).join('')}</div>
       <div class="seg" style="margin-top:10px">
-        <button class="${state.fastingStart?'on':''}" onclick="startFast()">▶ Начать голодание</button>
-        <button onclick="resetFast()">↺ Сброс</button>
+        <button class="${state.fastingStart?'on':''}" onclick="startFast()">▶ Начать</button>
+        <button onclick="resetFast()">⏹ Закончить</button>
       </div>
       <div class="sub" style="margin-top:8px">${state.fastingStart?'Голодание запущено вручную':'Идёт от последнего приёма пищи. Можно задать вручную ниже.'}</div>
       <div style="margin-top:12px;padding-top:12px;border-top:1px solid #EEE">

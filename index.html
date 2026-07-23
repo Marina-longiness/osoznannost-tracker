@@ -279,6 +279,8 @@ function caloriesToday(){return todayMeals().reduce((s,e)=>s+(Number(e.calories)
 function macroToday(k){return todayMeals().reduce((s,e)=>s+(Number(e[k])||0),0);}
 function entryBurned(e){if(e.burned!=null&&e.burned!=='')return Number(e.burned)||0;var rate={walk:4,run:10,workout:8,yoga:3,stretch:2};if(Number(e.steps))return Math.round(Number(e.steps)*0.04);if(Number(e.minutes))return Math.round(Number(e.minutes)*(rate[e.activityType]||4));return 0;}
 function burnedToday(){return todayActs().reduce((s,e)=>s+entryBurned(e),0);}
+function waterToday(){return todayEntries().filter(e=>e.type==='water').reduce((s,e)=>s+(Number(e.ml)||0),0);}
+function addWater(ml){state.entries.push({id:uid(),ts:Date.now(),type:'water',ml:ml});save();render();haptic();}
 function stepsToday(){return todayActs().reduce((s,e)=>s+(Number(e.steps)||0),0);}
 function motivText(m,g){if(m<=0)return 'Начни двигаться — даже 5 минут считаются 💪';if(m<g)return 'Ещё '+(g-m)+' мин до цели дня 🎯';return 'Цель дня достигнута! Ты супер 🎉';}
 function lastMealTs(){const m=state.entries.filter(e=>e.type==='meal').sort((a,b)=>b.ts-a.ts);return m.length?m[0].ts:null;}
@@ -374,6 +376,15 @@ function renderToday(){
       </div>
     </div>
 
+    <div class="card white" style="display:flex;align-items:center;gap:14px">
+      <div style="font-size:30px">💧</div>
+      <div style="flex:1">
+        <div style="font-size:20px;font-weight:800;letter-spacing:-.5px">${Math.round(waterToday()/250)} / ${Math.round((DATA.waterGoalMl||2000)/250)} <span style="font-size:13px;color:var(--muted);font-weight:700">стаканов</span></div>
+        <div class="bar on-light" style="margin-top:8px"><i style="width:${Math.min(100,Math.round(waterToday()/(DATA.waterGoalMl||2000)*100))}%"></i></div>
+      </div>
+      <button class="add-mini" style="width:auto;padding:0 16px;margin:0" onclick="addWater(250)">+ стакан</button>
+    </div>
+
     <div class="card white tip">
       <div class="lab">Совет</div>
       <div class="txt">${DATA.tips[tipIndex]}</div>
@@ -412,7 +423,7 @@ function rowHTML(e){
       <span class="tag ${h.physical?'':'hot'}">${h.physical?'🍽 '+h.label:'⚠ '+h.label}</span>
       ${(e.emotions&&e.emotions.length?e.emotions:[e.emotion]).filter(Boolean).map(id=>`<span class="tag emo">${emo(id).emoji} ${emo(id).label}</span>`).join('')}
       <span class="tag">${inten(e.intensity)}</span>
-    </div></div>`;
+    </div>${e.note?`<div style="margin-top:8px;font-size:12.5px;color:var(--muted);font-style:italic;line-height:1.35">💭 ${escapeHtml(e.note)}</div>`:''}</div>`;
 }
 
 function renderProgress(){
@@ -544,6 +555,7 @@ function mealSheet(title,lead,v){
         <input type="number" id="m-fat" inputmode="numeric" placeholder="Жиры" value="${v.fat!=null&&v.fat!==''?v.fat:''}">
         <input type="number" id="m-carb" inputmode="numeric" placeholder="Углев" value="${v.carbs!=null&&v.carbs!==''?v.carbs:''}">
       </div></div>
+    <div class="field"><label>Заметка (мысли, ситуация) — по желанию</label><input type="text" id="m-note" placeholder="например: заела дедлайн" value="${v.note?escapeHtml(v.note):''}"></div>
     ${!editingId?`<div class="field"><label>Когда</label>
       <div class="chipset" data-group="mday" style="margin-bottom:8px">
         <button type="button" class="ch sel" data-val="today" onclick="pick(this)">Сегодня</button>
@@ -566,12 +578,13 @@ function saveMeal(){
   const calories=kcalRaw===''?null:Math.max(0,parseInt(kcalRaw,10)||0);
   const gnum=id=>{var x=$(id)?$(id).value:'';return x===''?null:Math.max(0,parseInt(x,10)||0);};
   const protein=gnum('m-prot'),fat=gnum('m-fat'),carbs=gnum('m-carb');
+  const note=($('m-note')&&$('m-note').value?$('m-note').value.trim():'')||null;
   const intensity=getPick('intensity')||'mid';
   if(editingId){
     const e=state.entries.find(x=>x.id===editingId);
-    Object.assign(e,{name,calories,protein,fat,carbs,emotion,emotions,intensity,hunger});
+    Object.assign(e,{name,calories,protein,fat,carbs,emotion,emotions,intensity,hunger,note});
   }else{
-    state.entries.push({id:uid(),ts:tsFrom(getPick('mday'),$('m-time')?$('m-time').value:''),type:'meal',name,calories,protein,fat,carbs,emotion,emotions,intensity,hunger});
+    state.entries.push({id:uid(),ts:tsFrom(getPick('mday'),$('m-time')?$('m-time').value:''),type:'meal',name,calories,protein,fat,carbs,emotion,emotions,intensity,hunger,note});
   }
   save();closeModal();render();haptic();
 }

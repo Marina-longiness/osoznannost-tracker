@@ -20,5 +20,21 @@
     ],
     "intensity": "low",
     "hunger": "mid"
+  },
+  {
+    "id": "a-1784808860981",
+    "ts": 1784808860981,
+    "type": "meal",
+    "name": "Куриная грудка запечённая с помидорами и сыром, гречка, огурцы",
+    "calories": 520,
+    "protein": 48,
+    "fat": 16,
+    "carbs": 38,
+    "emotion": "calm",
+    "emotions": [
+      "calm"
+    ],
+    "intensity": "low",
+    "hunger": "hungry"
   }
 ]

@@ -20,13 +20,5 @@
     ],
     "intensity": "low",
     "hunger": "mid"
-  },
-  {
-    "id": "a-1784807623436",
-    "ts": 1784807623436,
-    "type": "activity",
-    "activityType": "workout",
-    "minutes": 2,
-    "burned": 10
   }
 ]

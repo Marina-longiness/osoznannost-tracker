@@ -504,7 +504,7 @@ function renderProgress(){
         <p class="no">Баллы — только за осознанность, не за «мало съел» или голодание.</p>
       </div>
     </div></div>
-    <div class="block"><button class="add-mini" style="background:#B0665C" onclick="wipeAll()">🗑 Стереть все записи</button></div>`;
+    <div class="block"><button class="add-mini" onclick="wipeAll()">↻ Обновить из сервера</button></div>`;
 }
 
 function plural(n,a,b,c){const m=n%100;if(m>=11&&m<=14)return c;const l=n%10;return l===1?a:(l>=2&&l<=4?b:c);}
@@ -519,7 +519,7 @@ function startFast(){state.fastingStart=Date.now();save();render();haptic();}
 function resetFast(){state.fastingStart=null;save();render();haptic();}
 function setFastStart(){var t=$('f-time')?$('f-time').value:'';state.fastingStart=tsFrom(getPick('fday')||'today',t);save();render();haptic();}
 function haptic(){try{Telegram.WebApp.HapticFeedback.impactOccurred('light');}catch(e){}}
-function wipeAll(){var go=function(ok){if(ok){state.deleted=(state.deleted||[]).concat(state.entries.map(function(e){return e.id;}));try{fetch(API+'/entries/all',{method:'DELETE'});}catch(x){}state.entries=[];save();render();haptic();}};try{if(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.showConfirm){Telegram.WebApp.showConfirm('Удалить ВСЕ записи? Это нельзя отменить.',go);return;}}catch(e){}go(window.confirm('Удалить ВСЕ записи?'));}
+function wipeAll(){state.entries=[];state.deleted=[];save();syncFromServer();render();haptic();}
 
 /* ---- modal core ---- */
 function openModal(html){$('sheet').innerHTML=html;$('overlay').classList.add('open');}
